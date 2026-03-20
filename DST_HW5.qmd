@@ -1,0 +1,160 @@
+---
+title: "HW5 Instructions"
+author: "Cordelia Corera"
+editor: visual
+format:
+  html:
+    embed-resources: true
+    code-fold: true  
+execute:
+  echo: true
+  message: false
+  warning: false
+---
+
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(tidytext)
+library(stringr)
+library(schrute)
+```
+
+```
+
+# The Office
+
+Let's return to *The Office* and the question of how many times they said "that's what she said". Now we can use n-grams to help us with the searching. Recall that the text is in the [schrute](https://cran.r-project.org/web/packages/schrute/index.html) package on CRAN.
+
+Do the following: (please label each section with the same number as listed here)
+
+1.  Count the number of [lines]{.underline} in which "that's what she said" is said in *The Office* (yes, we discussed this previously)
+
+```{r}
+office <- theoffice %>%
+  mutate(text_clean = str_to_lower(text))
+
+twss_lines <- office %>%
+  filter(str_detect(text_clean, 
+                    "that's what she said|thats what she said"))
+
+n_twss <- nrow(twss_lines)
+
+n_twss
+
+```
+
+There's 33 lines where the phrase "that's what she said" appears in The Office.
+
+2.  Confirm that you get the same result when using `ngram4`, a variable which is an ngram of size 4 (4 words at a time).
+
+```{r}
+## 2) Confirm using ngram4
+
+ngram4 <- office %>%
+  unnest_tokens(ngram4, text_clean, token = "ngrams", n = 4)
+
+ngram4 %>%
+  filter(ngram4 == "that's what she said" |
+         ngram4 == "thats what she said") %>%
+  nrow()
+
+```
+
+Using ngram4 resulted in 35 matches. This is slightly higher than the 33 lines we identified at first, suggesting that some lines might contain multiple occurrences or slight variations of the phrase.
+
+3.  Explore whether "that's what she" included in `ngram4` allows you to determine any additional phrases that should be included.
+
+```{r}
+ngram4 %>%
+  filter(str_detect(ngram4, "that's what she")) %>%
+  distinct(ngram4) %>%
+  arrange(ngram4)
+
+```
+The 4-grams containing "that's what she" mostly show words that came before the phrase (e.g., "hard that's what she"). This doesnt suggest more variations of the phrase, but instead reflects the immediate context before it.
+
+
+4.  Explore whether "what she said" included in `ngram4` allows you to determine any additional phrases that should be included.
+
+```{r}
+ngram4 %>%
+  filter(str_detect(ngram4, "what she said")) %>%
+  distinct(ngram4) %>%
+  arrange(ngram4)
+
+```
+The 4-grams containing "what she said" mostly show words that follow the phrase (e.g., "what she said and", "what she said no"). These dont represent additional versions of the joke, but instead continuations of dialogue.
+
+
+5.  Print all the [unique]{.underline} lines that contain the words "that", "what", "she" and "said", but do NOT contain the string "that's what she said". Decide whether any of these lines should be included as saying "that's what she said".
+
+```{r}
+candidate_lines <- office %>%
+  filter(
+    str_detect(text_clean, "that") &
+    str_detect(text_clean, "what") &
+    str_detect(text_clean, "she") &
+    str_detect(text_clean, "said") &
+    !str_detect(text_clean, "that's what she said|thats what she said")
+  ) %>%
+  distinct(text_clean)
+
+candidate_lines
+
+```
+The lines identified contain the words “that”, “what”, “she”, and “said”, but they dont form the structure of the joke. These seem to be regular dialogue and so they shouldnt be included as instances of “that’s what she said.”
+
+
+6.  Create a frequency distribution of X, where X is determined from the third word in "that's what X said".
+
+```{r}
+twxs <- ngram4 %>%
+  filter(str_detect(ngram4, "^that's what [[:alpha:]]+ said$")) %>%
+  distinct(ngram4)
+
+twxs
+
+twxs_x_freq <- twxs %>%
+  mutate(
+    x = word(ngram4, 3)   # "that's"(1) "what"(2) X(3) "said"(4)
+  ) %>%
+  count(x, sort = TRUE)
+
+twxs_x_freq
+
+```
+The third-word frequency shows lots of grammatical variations such as "he", "you", and character names. But, only "she" represents the canonical joke format. So the only instances where X = "she" are counted as actual variants of the phrase.
+
+
+7.  Add a categorical variable to the *original* data that takes a value that equals 0 if it was not identified in your work above, 1 if the line says "that's what she said", otherwise it should say 3 if you identified it from starting with "that's what she", otherwise it should say 4 if you identified it from ending with "what she said", otherwise if should say 5 if you identified it in part 5, otherwise it should say 6 if you identified it in part 6. In part 6, you are welcome to make a judgment call about which third words you want to count as similar to "that's what she said" (but you should clearly state which ones you have chosen).
+
+```{r}
+office_coded <- office %>%
+  mutate(
+    twss_category = case_when(
+      str_detect(text_clean, "that's what she said|thats what she said") ~ 1,
+      TRUE ~ 0
+    )
+  )
+
+office_coded %>%
+  count(twss_category)
+
+```
+Categories 3, 4, 5, and 6 were evaluated but didnt result in additional qualifying lines; so, all remaining lines are coded as 0.
+
+8.  Create a frequency distribution of the new variable you created in part 7.
+
+![]()
+
+```{r}
+office_coded %>%
+  count(twss_category)
+
+```
