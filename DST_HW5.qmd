@@ -12,8 +12,6 @@ execute:
   warning: false
 ---
 
-
-
 ```{r}
 #| echo: false
 #| message: false
@@ -23,8 +21,6 @@ library(tidyverse)
 library(tidytext)
 library(stringr)
 library(schrute)
-```
-
 ```
 
 # The Office
@@ -68,6 +64,8 @@ ngram4 %>%
 
 Using ngram4 resulted in 35 matches. This is slightly higher than the 33 lines we identified at first, suggesting that some lines might contain multiple occurrences or slight variations of the phrase.
 
+#Unnest tokens removes the punctuation so don't think it is necessary to include the first part before the \| as it will not match anything
+
 3.  Explore whether "that's what she" included in `ngram4` allows you to determine any additional phrases that should be included.
 
 ```{r}
@@ -77,8 +75,8 @@ ngram4 %>%
   arrange(ngram4)
 
 ```
-The 4-grams containing "that's what she" mostly show words that came before the phrase (e.g., "hard that's what she"). This doesnt suggest more variations of the phrase, but instead reflects the immediate context before it.
 
+The 4-grams containing "that's what she" mostly show words that came before the phrase (e.g., "hard that's what she"). This doesnt suggest more variations of the phrase, but instead reflects the immediate context before it.
 
 4.  Explore whether "what she said" included in `ngram4` allows you to determine any additional phrases that should be included.
 
@@ -89,8 +87,8 @@ ngram4 %>%
   arrange(ngram4)
 
 ```
-The 4-grams containing "what she said" mostly show words that follow the phrase (e.g., "what she said and", "what she said no"). These dont represent additional versions of the joke, but instead continuations of dialogue.
 
+The 4-grams containing "what she said" mostly show words that follow the phrase (e.g., "what she said and", "what she said no"). These dont represent additional versions of the joke, but instead continuations of dialogue.
 
 5.  Print all the [unique]{.underline} lines that contain the words "that", "what", "she" and "said", but do NOT contain the string "that's what she said". Decide whether any of these lines should be included as saying "that's what she said".
 
@@ -108,8 +106,8 @@ candidate_lines <- office %>%
 candidate_lines
 
 ```
-The lines identified contain the words “that”, “what”, “she”, and “said”, but they dont form the structure of the joke. These seem to be regular dialogue and so they shouldnt be included as instances of “that’s what she said.”
 
+The lines identified contain the words “that”, “what”, “she”, and “said”, but they dont form the structure of the joke. These seem to be regular dialogue and so they shouldnt be included as instances of “that’s what she said.”
 
 6.  Create a frequency distribution of X, where X is determined from the third word in "that's what X said".
 
@@ -129,8 +127,10 @@ twxs_x_freq <- twxs %>%
 twxs_x_freq
 
 ```
+
 The third-word frequency shows lots of grammatical variations such as "he", "you", and character names. But, only "she" represents the canonical joke format. So the only instances where X = "she" are counted as actual variants of the phrase.
 
+#Nice explanation as to why only "she" counts to justify filtering out the rest
 
 7.  Add a categorical variable to the *original* data that takes a value that equals 0 if it was not identified in your work above, 1 if the line says "that's what she said", otherwise it should say 3 if you identified it from starting with "that's what she", otherwise it should say 4 if you identified it from ending with "what she said", otherwise if should say 5 if you identified it in part 5, otherwise it should say 6 if you identified it in part 6. In part 6, you are welcome to make a judgment call about which third words you want to count as similar to "that's what she said" (but you should clearly state which ones you have chosen).
 
@@ -147,7 +147,10 @@ office_coded %>%
   count(twss_category)
 
 ```
+
 Categories 3, 4, 5, and 6 were evaluated but didnt result in additional qualifying lines; so, all remaining lines are coded as 0.
+
+#Think it would have been nice to see how you evaluated 3,4,5,6 even though it did not result in additional qualifying lines
 
 8.  Create a frequency distribution of the new variable you created in part 7.
 
@@ -158,3 +161,5 @@ office_coded %>%
   count(twss_category)
 
 ```
+
+#Think it might have been nice to visualize as a plot instead
