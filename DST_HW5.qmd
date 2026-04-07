@@ -135,6 +135,34 @@ The third-word frequency shows lots of grammatical variations such as "he", "you
 7.  Add a categorical variable to the *original* data that takes a value that equals 0 if it was not identified in your work above, 1 if the line says "that's what she said", otherwise it should say 3 if you identified it from starting with "that's what she", otherwise it should say 4 if you identified it from ending with "what she said", otherwise if should say 5 if you identified it in part 5, otherwise it should say 6 if you identified it in part 6. In part 6, you are welcome to make a judgment call about which third words you want to count as similar to "that's what she said" (but you should clearly state which ones you have chosen).
 
 ```{r}
+cat3_lines <- ngram4 %>%
+  filter(str_detect(ngram4, "^thats what she")) %>%
+  distinct(ngram4)
+
+cat4_lines <- ngram4 %>%
+  filter(str_detect(ngram4, "what she said$")) %>%
+  distinct(ngram4)
+
+cat5_lines <- office %>%
+  filter(
+    str_detect(text_clean, "that") &
+    str_detect(text_clean, "what") &
+    str_detect(text_clean, "she") &
+    str_detect(text_clean, "said") &
+    !str_detect(text_clean, "that's what she said|thats what she said")
+  ) %>%
+  distinct(text_clean)
+
+cat6_lines <- ngram4 %>%
+  filter(str_detect(ngram4, "^thats what [[:alpha:]]+ said$")) %>%
+  filter(ngram4 != "thats what she said") %>%
+  distinct(ngram4)
+
+cat3_lines
+cat4_lines
+cat5_lines
+cat6_lines
+
 office_coded <- office %>%
   mutate(
     twss_category = case_when(
@@ -147,7 +175,7 @@ office_coded %>%
   count(twss_category)
 
 ```
-Categories 3, 4, 5, and 6 were evaluated but didnt result in additional qualifying lines; so, all remaining lines are coded as 0.
+I reviewed categories 3, 4, 5, and 6 separately, but none of the additional lines were close enough to count as true versions of "that's what she said."
 
 8.  Create a frequency distribution of the new variable you created in part 7.
 
@@ -156,5 +184,14 @@ Categories 3, 4, 5, and 6 were evaluated but didnt result in additional qualifyi
 ```{r}
 office_coded %>%
   count(twss_category)
-
+  
+office_coded %>%
+  count(twss_category) %>%
+  ggplot(aes(x = factor(twss_category), y = n)) +
+  geom_col() +
+  labs(
+    x = "TWSS Category",
+    y = "Frequency",
+    title = "Frequency Distribution of TWSS Category"
+  )
 ```
