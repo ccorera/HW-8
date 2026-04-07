@@ -175,11 +175,9 @@ office_coded %>%
   count(twss_category)
 
 ```
-<<<<<<< HEAD
-I reviewed categories 3, 4, 5, and 6 separately, but none of the additional lines were close enough to count as true versions of "that's what she said."
-=======
 
 I reviewed categories 3, 4, 5, and 6 separately, but none of the additional lines were close enough to count as true versions of "that's what she said."
+
 
 8.  Create a frequency distribution of the new variable you created in part 7.
 
